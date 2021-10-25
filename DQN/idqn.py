@@ -56,9 +56,9 @@ class QNet(nn.Module):
         return torch.cat(q_values, dim=1)
 
     def sample_action(self, obs, epsilon):
-        out = self.forward(obs)
-        mask = (torch.rand((out.shape[0],)) <= epsilon)
-        action = torch.empty((out.shape[0], out.shape[1],))
+        out = self.forward(obs) # torch.Size([1, n_agents, n_action])
+        mask = (torch.rand((out.shape[0],)) <= epsilon) # torch.Size([1])
+        action = torch.empty((out.shape[0], out.shape[1],)) # torch.Size([1, n_agents])
         action[mask] = torch.randint(0, out.shape[2], action[mask].shape).float()
         action[~mask] = out[~mask].argmax(dim=2).float()
         return action
@@ -66,12 +66,19 @@ class QNet(nn.Module):
 
 def train(q, q_target, memory, optimizer, gamma, batch_size, update_iter=10):
     for _ in range(update_iter):
-        s, a, r, s_prime, done_mask = memory.sample(batch_size)
+        s, a, r, s_prime, done_mask = memory.sample(batch_size) # tuple (length 5)
+        # s: torch.Size([batch_size, n_agents, n_observations])
+        # a: torch.Size([batch_size, n_agents])
+        # r: torch.Size([batch_size, n_agents])
+        # s_prime: torch.Size([batch_size, n_agents, n_observations])
+        # done_mask: torch.Size([batch_size, n_agents])
 
-        q_out = q(s)
-        q_a = q_out.gather(2, a.unsqueeze(-1).long()).squeeze(-1)
-        max_q_prime = q_target(s_prime).max(dim=2)[0]
-        target = r + gamma * max_q_prime * done_mask
+        # all q values
+        q_out = q(s) # torch.Size([batch_size, n_agents, n_actions])
+        # q values of corresponding actions taken
+        q_a = q_out.gather(2, a.unsqueeze(-1).long()).squeeze(-1) # torch.Size([batch_size, n_agents])
+        max_q_prime = q_target(s_prime).max(dim=2)[0] # torch.Size([batch_size, n_agents])
+        target = r + gamma * max_q_prime * done_mask # torch.Size([batch_size, n_agents])
         loss = F.smooth_l1_loss(q_a, target.detach())
 
         optimizer.zero_grad()
