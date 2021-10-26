@@ -34,14 +34,22 @@ class QTables():
         obs_power = [v * (self.observation_num ** i) for i, v in enumerate(obs_shift)] # apply exponentiation to each element
         return sum(obs_power) # return the sum (results are between 0 and 256)
     
-    def get_action(self, observations, agent_i, stuck_counts, max_stuck, e_greedy=True):
+    def softmax(self, a):
+        # deal with overflow
+        c = np.max(a)
+        exp_a = np.exp(a - c)
+        sum_exp_a = np.sum(exp_a)
+        y = exp_a / sum_exp_a
+        return y
+    
+    def get_action(self, observations, agent_i, stuck_counts, max_stuck, e_greedy=True, softmax=False):
         # convert the observation to a row number
         obs_row = self.obs_to_row(observations[agent_i])
         if stuck_counts[agent_i] >= max_stuck: # random action to avoid stuck
             action = random.choice(self.action_values)
             greedy = False
             action_value = self.q_tables[agent_i][obs_row][action]
-        elif e_greedy: # epsilon greedy for training
+        elif e_greedy: # epsilon greedy for training (e_greedy=True)
             if np.random.rand() < self.eps:
                 action = random.choice(self.action_values)
                 greedy = False
@@ -50,6 +58,11 @@ class QTables():
                 action = np.argmax(self.q_tables[agent_i][obs_row])
                 greedy = True
                 action_value = self.q_tables[agent_i][obs_row][action]
+        elif softmax: # (e_greedy=False and softmax=True)
+            p = self.softmax(self.q_tables[agent_i][obs_row])
+            action = np.random.choice(np.arange(self.action_num), p=p)
+            greedy = False
+            action_value = self.q_tables[agent_i][obs_row][action]
         else: # all greedy choices for testing performance
             action = np.argmax(self.q_tables[agent_i][obs_row])
             greedy = True
