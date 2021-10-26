@@ -87,12 +87,12 @@ class Grid(gym.Env):
                     if obs_x >= 0 and obs_y >= 0 and obs_x <= self.x_size - 1 and obs_y <= self.y_size - 1:
                         single_obs[i][j] = self.grid_status[obs_x][obs_y]
             single_obs_flat = single_obs.flatten() # convert matrix to list
-            if self.simple_fov: # [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                xm = single_obs_flat[1]
-                xp = single_obs_flat[7]
-                ym = single_obs_flat[3]
-                yp = single_obs_flat[5]
-                single_obs_flat = np.array([xm, xp, ym, yp])
+            # extract the necessary cells
+            xm = single_obs_flat[1]
+            xp = single_obs_flat[7]
+            ym = single_obs_flat[3]
+            yp = single_obs_flat[5]
+            single_obs_flat = np.array([xm, xp, ym, yp])
             self.agent_obs.append(single_obs_flat)
         return self.agent_obs
 

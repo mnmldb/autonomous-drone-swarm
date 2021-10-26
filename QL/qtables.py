@@ -40,20 +40,20 @@ class QTables():
         if stuck_counts[agent_i] >= max_stuck: # random action to avoid stuck
             action = random.choice(self.action_values)
             greedy = False
-            action_value = self.q_tables[agent_i][obs_row][action[agent_i]]
+            action_value = self.q_tables[agent_i][obs_row][action]
         elif e_greedy: # epsilon greedy for training
             if np.random.rand() < self.eps:
                 action = random.choice(self.action_values)
                 greedy = False
-                action_value = self.q_tables[agent_i][obs_row][action[agent_i]]
+                action_value = self.q_tables[agent_i][obs_row][action]
             else:
                 action = np.argmax(self.q_tables[agent_i][obs_row])
                 greedy = True
-                action_value = self.q_tables[agent_i][obs_row][action[agent_i]]
+                action_value = self.q_tables[agent_i][obs_row][action]
         else: # all greedy choices for testing performance
             action = np.argmax(self.q_tables[agent_i][obs_row])
             greedy = True
-            action_value = self.q_tables[agent_i][obs_row][action[agent_i]]
+            action_value = self.q_tables[agent_i][obs_row][action]
         
         return action, greedy, action_value
     
@@ -62,7 +62,7 @@ class QTables():
         if self.eps > self.eps_end: # lower bound
             self.eps *= self.r
 
-    def train(self, obs, obs_next, action, reward, agent_i):
+    def train(self, obs, obs_next, action, reward, done, agent_i):
         obs_row = self.obs_to_row(obs[agent_i])
         obs_next_row = self.obs_to_row(obs_next[agent_i])
         act_col = action
@@ -71,7 +71,10 @@ class QTables():
         q_next_max = np.max(self.q_tables[agent_i][obs_next_row]) # the maximum q value in the next state
 
         # update the q value
-        self.q_tables[agent_i][obs_row][act_col] = q_current + self.lr * (reward + self.gamma * q_next_max - q_current)
+        if done:
+            self.q_tables[agent_i][obs_row][act_col] = q_current + self.lr * reward
+        else:
+            self.q_tables[agent_i][obs_row][act_col] = q_current + self.lr * (reward + self.gamma * q_next_max - q_current)
 
         # inclement the corresponding count
         self.q_table_counts[agent_i][obs_row][act_col] += 1
