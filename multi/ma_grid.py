@@ -26,6 +26,7 @@ class GridMultiAgent(gym.Env):
 
         # number of the agents
         self.n_agents = n_agents
+        self.idx_agents = list(range(n_agents)) # [0, 1, 2, ..., n_agents - 1]
         
         # initialize mapping status
         self.init_grid()
@@ -117,6 +118,20 @@ class GridMultiAgent(gym.Env):
         self.init_grid()
         # initialize the position of the agent
         self.init_agent()
+
+        # check if the drones at initial positions are surrounded by obstacles
+        while True:
+            obs = self.get_agent_obs()
+            obs_tf = []
+            for i in range(self.n_agents):
+                agent_obs_tf = obs[i][0] != 0 and obs[i][1] != 0 and obs[i][2] != 0 and obs[i][3] != 0
+                obs_tf.append(agent_obs_tf)
+            if any(obs_tf):
+                self.init_grid()
+                self.init_agent()
+            else:
+                break
+
         return self.get_agent_obs()
         
     def step(self, action):
