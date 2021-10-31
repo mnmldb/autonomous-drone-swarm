@@ -134,139 +134,81 @@ class GridMultiAgent(gym.Env):
 
         return self.get_agent_obs()
         
-    def step(self, action):
-        org_pos = copy.deepcopy(self.agent_pos) # original positions
-        new_pos = copy.deepcopy(self.agent_pos) # new positions
-        org_grid = copy.deepcopy(self.grid_status) # original grid status
-        new_grid = copy.deepcopy(self.grid_status) # new grid status
-        reward = []
+    def step(self, action, i):
+        # original positions
+        org_x = self.agent_pos[i][0]
+        org_y = self.agent_pos[i][1]
 
-        # move all agents to new positions
-        for i in range(self.n_agents):
-            # action
-            single_action = action[i]
+        # move the agent
+        if action == self.XM: # 0
+            self.agent_pos[i][0] -= 1
+        elif action == self.XP: # 1
+            self.agent_pos[i][0] += 1
+        elif action == self.YM: # 2
+            self.agent_pos[i][1] -= 1
+        elif action == self.YP: # 3
+            self.agent_pos[i][1] += 1
+        elif action == self.XMYM: # 4
+            self.agent_pos[i][0] -= 1
+            self.agent_pos[i][1] -= 1
+        elif action == self.XMYP: # 5
+            self.agent_pos[i][0] -= 1
+            self.agent_pos[i][1] += 1
+        elif action == self.XPYM: # 6
+            self.agent_pos[i][0] += 1
+            self.agent_pos[i][1] -= 1
+        elif action == self.XPYP: # 7
+            self.agent_pos[i][0] += 1
+            self.agent_pos[i][1] += 1
+        else:
+            raise ValueError("Received invalid action={} which is not part of the action space".format(action))
+    
+        # account for the boundaris of the grid (-2: out of the grid)
+        if self.agent_pos[i][0] > self.x_size - 1 or self.agent_pos[i][0] < 0 or self.agent_pos[i][1] > self.y_size - 1 or self.agent_pos[i][1] < 0:
+            # go back to the original position
+            self.agent_pos[i][0] = org_x
+            self.agent_pos[i][1] = org_y
+            self.grid_counts[i][self.agent_pos[i][0], self.agent_pos[i][1]] += 1
+            reward = 0
 
-            # move the agent
-            if single_action == self.XM: # 0
-                new_pos[i][0] -= 1
-            elif single_action == self.XP: # 1
-                new_pos[i][0] += 1
-            elif single_action == self.YM: # 2
-                new_pos[i][1] -= 1
-            elif single_action == self.YP: # 3
-                new_pos[i][1] += 1
-            elif single_action == self.XMYM: # 4
-                new_pos[i][0] -= 1
-                new_pos[i][1] -= 1
-            elif single_action == self.XMYP: # 5
-                new_pos[i][0] -= 1
-                new_pos[i][1] += 1
-            elif single_action == self.XPYM: # 6
-                new_pos[i][0] += 1
-                new_pos[i][1] -= 1
-            elif single_action == self.XPYP: # 7
-                new_pos[i][0] += 1
-                new_pos[i][1] += 1
-            else:
-                raise ValueError("Received invalid action={} which is not part of the action space".format(single_action))
-        
-            # account for the boundaris of the grid (-2: out of the grid)
-            if new_pos[i][0] > self.x_size - 1 or new_pos[i][0] < 0 or new_pos[i][1] > self.y_size - 1 or new_pos[i][1] < 0:
+        # previous status of the cell
+        else:
+            prev_status = self.grid_status[self.agent_pos[i][0], self.agent_pos[i][1]]
+            if prev_status == self.OBS: # the new position is on the obstacle
                 # go back to the original position
-                new_pos[i][0] = org_pos[i][0]
-                new_pos[i][1] = org_pos[i][1]
-                # self.grid_counts[new_pos[i][0], new_pos[i][1]] += 1
-                single_reward = -10
-
-            # previous status of the cell
-            else:
-                prev_status = org_grid[new_pos[i][0], new_pos[i][1]]
-                if prev_status == self.OBS: # the new position is on the obstacle
-                    # go back to the original position
-                    new_pos[i][0] = org_pos[i][0]
-                    new_pos[i][1] = org_pos[i][1]
-                    # self.grid_counts[new_pos[i][0], new_pos[i][1]] += 1
-                    single_reward = -10
-                elif prev_status == self.POI:
-                    # update the cell 
-                    new_grid[new_pos[i][0], new_pos[i][1]] = 1
-                    # self.grid_counts[new_pos[i][0], new_pos[i][1]] += 1
-                    single_reward = 10
-                elif prev_status == self.MAP:
-                    # self.grid_counts[new_pos[i][0], new_pos[i][1]] += 1
-                    single_reward = -1
-            # reward of all agents    
-            reward.append(single_reward)
-        
-        # first collision check
-        intermediate_pos = copy.deepcopy(new_pos)
-        first_revert = []
-        not_revert = []
-        ## unique new positions
-        seen = []
-        unique_new_pos = [x for x in new_pos if x not in seen and not seen.append(x)]
-        ## go back to original positions when collision occurs
-        if len(new_pos) != len(unique_new_pos):
-            first_revert = []
-            for i in range(self.n_agents):
-                cnt = 0
-                for j in new_pos:
-                    if new_pos[i] == j:
-                        cnt += 1
-                if cnt > 1:
-                    intermediate_pos[i] = org_pos[i]
-                    first_revert.append(i)
-            not_revert = list(set(range(self.n_agents)) ^ set(first_revert))
-        ## penalty and revert mapping status
-        for i in first_revert:
-            reward[i] = -30
-            new_grid[new_pos[i][0], new_pos[i][1]] = org_grid[new_pos[i][0], new_pos[i][1]]
-        
-        # second collision check
-        adjusted_pos = copy.deepcopy(intermediate_pos)
-        second_revert = []
-        ## unique intermediate positions
-        seen = []
-        unique_intermediate_pos = [x for x in intermediate_pos if x not in seen and not seen.append(x)]
-        ## go back to original positions when collision occurs
-        if len(intermediate_pos) != len(unique_intermediate_pos):
-            for i in not_revert:
-                cnt = 0
-                for j in intermediate_pos:
-                    if intermediate_pos[i] == j:
-                        cnt += 1
-                if cnt > 1:
-                    adjusted_pos[i] = org_pos[i]
-                    second_revert.append(i)
-        ## penalty and revert mapping status
-        for i in second_revert:
-            reward[i] = -30
-            new_grid[intermediate_pos[i][0], intermediate_pos[i][1]] = org_grid[intermediate_pos[i][0], intermediate_pos[i][1]]
+                self.agent_pos[i][0] = org_x
+                self.agent_pos[i][1] = org_y
+                self.grid_counts[i][self.agent_pos[i][0], self.agent_pos[i][1]] += 1
+                reward = 0
+            if prev_status == self.AGT:
+                # go back to the original position
+                self.agent_pos[i][0] = org_x
+                self.agent_pos[i][1] = org_y
+                self.grid_counts[i][self.agent_pos[i][0], self.agent_pos[i][1]] += 1
+                reward = 0
+            elif prev_status == self.POI:
+                # update the cell 
+                self.grid_counts[i][self.agent_pos[i][0], self.agent_pos[i][1]] += 1
+                self.grid_status[self.agent_pos[i][0], self.agent_pos[i][1]] = 1
+                reward = 10
+            elif prev_status == self.MAP:
+                self.grid_counts[i][self.agent_pos[i][0], self.agent_pos[i][1]] += 1
+                reward = 0
 
         # check if agents map all cells
         mapped_poi = np.count_nonzero(self.grid_status == 1)
-        single_done = bool(mapped_poi == self.n_poi)
-        done = [single_done] * self.n_agents
+        done = bool(mapped_poi == self.n_poi)
 
-        # update agent positions and grid status
-        self.agent_pos = adjusted_pos
-        self.grid_status = new_grid
-
-        # update the grid counts and stuck counts
-        for i in range(self.n_agents):
-            self.grid_counts[i][self.agent_pos[i][0]][self.agent_pos[i][1]] += 1
-            if org_pos[i] == self.agent_pos[i]: # stuck
-                self.stuck_counts[i] += 1
-            else:
-                self.stuck_counts[i] = 0
+        # update the stuck count
+        if org_x == self.agent_pos[i][0] and org_y == self.agent_pos[i][1]: # stuck
+            self.stuck_counts[i] += 1
+        else:
+            self.stuck_counts[i] = 0
 
         # update the grid_agents_status
         self.grid_overlay()
-
-        # optionally we can pass additional info
-        info = {}
         
-        return self.get_agent_obs(), reward, done, info
+        return self.get_agent_obs(), reward, done
 
     def close(self):
         pass
