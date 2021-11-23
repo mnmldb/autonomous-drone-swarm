@@ -3,10 +3,12 @@
 <tr>
 <th>Efficient Case</th>
 <th>Reduncant Case</th>
+<th>Unsuccessful Case</th>
 </tr>
 <tr>
 <td><img src="https://user-images.githubusercontent.com/47055092/142976224-7ed678fe-4270-4576-ab9a-fb7f0054729e.gif" width="240px"></td>
 <td><img src="https://user-images.githubusercontent.com/47055092/142976291-ccb563f6-cf50-456a-ba41-ee71dfb68999.gif" width="240px"></td>
+<td><img src="https://user-images.githubusercontent.com/47055092/142979550-21985f8f-a8f6-46c1-9941-604d4953be32.gif" width="240px"></td>
 </tr>
 </table>
 
