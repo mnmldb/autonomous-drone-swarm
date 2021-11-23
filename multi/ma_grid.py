@@ -41,8 +41,8 @@ class GridMultiAgent(gym.Env):
         # define observation space
         self.fov_x = fov_x # number of cells around the agent
         self.fov_y = fov_y # number of cells around the agent
-        self.obs_low = np.ones(self.fov_x * self.fov_y) * self.OOE
-        self.obs_high = np.ones(self.fov_x * self.fov_y) * self.AGT 
+        self.obs_low = np.ones(self.fov_x * self.fov_y - 1) * self.OOE
+        self.obs_high = np.ones(self.fov_x * self.fov_y - 1) * self.AGT 
         self.observation_space = MultiAgentObservationSpace([spaces.Box(self.obs_low, self.obs_high) for _ in range(self.n_agents)])
     
     def init_grid(self):
@@ -110,6 +110,7 @@ class GridMultiAgent(gym.Env):
                     if obs_x >= 0 and obs_y >= 0 and obs_x <= self.x_size - 1 and obs_y <= self.y_size - 1:
                         single_obs[i][j] = self.grid_agents_status[obs_x][obs_y] # use grid_agents_status to capture other agent positions
             single_obs_flat = single_obs.flatten() # convert matrix to list
+            single_obs_flat = np.array([v for k, v in enumerate(single_obs_flat) if k != math.floor(self.fov_x * self.fov_y / 2)]) # remove the cell status of the drone
             self.agent_obs.append(single_obs_flat)
         return self.agent_obs
 
