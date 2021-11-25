@@ -7,7 +7,7 @@ class QTables():
 
         self.observation_space = observation_space
         self.observation_values = [-2, -1, 0, 1]
-        self.observation_num = len(self.observation_values) # 4
+        self.observation_num = len(self.observation_values) # 3
         self.observation_length = observation_space[0].shape[0] # field of view
 
         self.action_space = action_space
@@ -22,11 +22,11 @@ class QTables():
 
         self.q_tables = []
         for agent_i in range(self.num_agents):
-            self.q_tables.append(np.random.rand(self.observation_num**self.observation_length, self.action_num)) # (256 x 4) x num_agents
+            self.q_tables.append(np.random.rand(self.observation_num**self.observation_length, self.action_num))
         
         self.q_table_counts = []
         for agent_i in range(self.num_agents):
-            self.q_table_counts.append(np.zeros([self.observation_num**self.observation_length, self.action_num])) # (256 x 4) x num_agents
+            self.q_table_counts.append(np.zeros([self.observation_num**self.observation_length, self.action_num]))
 
     # support function: convert the fov to the unique row number in the q table
     def obs_to_row(self, obs_array):
