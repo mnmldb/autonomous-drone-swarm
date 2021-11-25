@@ -35,16 +35,18 @@ class Grid(gym.Env):
         self.obs_high = np.ones(4) # high 1: visited
         self.observation_space = MultiAgentObservationSpace([spaces.Box(self.obs_low, self.obs_high) for _ in range(self.n_agents)])
     
-    def init_agent(self):
-        # initialize the agent position
+    def init_agent(self, initial_pos=None):
         self.agent_pos = []
-        for i in range(self.n_agents):
-            while True:
+        if initial_pos is not None:
+            self.agent_pos = initial_pos
+            for i in range(self.n_agents):
+                self.grid_status[self.agent_pos[i][0], self.agent_pos[i][1]] = 1
+        else:
+            for i in range(self.n_agents):
                 agent_pos_x = random.randrange(0, self.x_size)
-                agent_pos_y = random.randrange(0, self.y_size)
-                if self.grid_status[agent_pos_x, agent_pos_y] == 0:
-                    self.agent_pos.append([agent_pos_x, agent_pos_y]) # [[x position of agent 1, y position of agent 1], [x position of agent 2, y position of agent 2], ...]
-                    break
+                agent_pos_y = random.randrange(0, self.x_size)
+                self.agent_pos.append([agent_pos_x, agent_pos_y])
+                self.grid_status[self.agent_pos[i][0], self.agent_pos[i][1]] = 1
 
         # iniqialize the stuck count
         self.stuck_counts = [0] * self.n_agents
@@ -59,7 +61,8 @@ class Grid(gym.Env):
         self.grid_counts = np.zeros([self.x_size, self.y_size])
 
         ## randomly set obstacles
-        n_obstacle = random.randrange(0, self.x_size * self.x_size * 0.2) # at most 20% of the grid
+        # n_obstacle = random.randrange(0, self.x_size * self.x_size * 0.2) # at most 20% of the grid
+        n_obstacle = 0
         for i in range(n_obstacle):
             x_obstacle = random.randrange(1, self.x_size - 1)
             y_obstacle = random.randrange(1, self.y_size - 1)
@@ -85,7 +88,7 @@ class Grid(gym.Env):
                     obs_x = self.agent_pos[agent][0] + (i - 1) # -1, 0, 1
                     obs_y = self.agent_pos[agent][1] + (j - 1) # -1, 0, 1
                     if obs_x >= 0 and obs_y >= 0 and obs_x <= self.x_size - 1 and obs_y <= self.y_size - 1:
-                        single_obs[i][j] = self.grid_status[obs_x][obs_y]
+                        single_obs[i][j] = copy.deepcopy(self.grid_status[obs_x][obs_y])
             single_obs_flat = single_obs.flatten() # convert matrix to list
             # extract the necessary cells
             xm = single_obs_flat[1]
@@ -96,11 +99,11 @@ class Grid(gym.Env):
             self.agent_obs.append(single_obs_flat)
         return self.agent_obs
 
-    def reset(self):
+    def reset(self, initial_pos=None):
         # initialize the mapping status
         self.init_grid()
         # initialize the position of the agent
-        self.init_agent()
+        self.init_agent(initial_pos)
         
         # check if the drones at initial positions are surrounded by obstacles
         while True:
@@ -119,8 +122,8 @@ class Grid(gym.Env):
         
     def step(self, action, i): # i: index of the drone
         # original position
-        org_x  = self.agent_pos[i][0]
-        org_y  = self.agent_pos[i][1]
+        org_x  = copy.deepcopy(self.agent_pos[i][0])
+        org_y  = copy.deepcopy(self.agent_pos[i][1])
 
         # move the agent
         if action == self.XM:
