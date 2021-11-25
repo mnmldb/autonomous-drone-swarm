@@ -1,3 +1,14 @@
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({
+ tex2jax: {
+ inlineMath: [['$', '$'] ],
+ displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+ }
+ });
+</script>
+
 ### CUSP-GX-5006: Urban Science Intensive II (Fall 2021) 
 # Developing Autonomous Drone Swarms with Multi-Agent Reinforcement Learning for Scalable Post-Disaster Damage Assessment
 <table align="center">
@@ -41,3 +52,19 @@ Daisuke Nakanishi, Gurpreet Singh, Kshitij Chandna
 
 ## Project Webpage
 https://1312gurpreet.github.io/droneswarm/index.html
+
+## Methods
+### Environment
+<img src="https://user-images.githubusercontent.com/47055092/143366238-53ff4fa1-7de5-4837-a874-4348e10b0389.png" width="240px">
+
+We discretize the 2-dimensional mission environment (disaster area) into a grid consisting of $m × m$ square cells. The length of the square cell side is sufficiently larger than the size of the drone, and two or more drones can occupy a single cell . The cell visited by at least one drone is considered mapped.
+
+### Sequential Decision-Making
+<img src="https://user-images.githubusercontent.com/47055092/143366712-f95833fe-5708-4d22-91ba-8f7c1249a802.png" height="180px" width="auto">
+
+Each time step, $n$ drones take action sequentially; the preceding drone mapping results are reflected in the mapping status matrix $M$ before the following one decides its action. Therefore, the following drone could indirectly and partially observe the preceding ones’ behaviors. The order of drones taking action is randomly set in each time step.
+
+### State Space and Action Space
+<img src="https://user-images.githubusercontent.com/47055092/143368985-16eaff34-dc1d-4831-8114-e6868540b2b5.png" height="140px" width="auto">
+
+We examine two state spaces to deal with possible disaster areas and scenarios. Action space consists of four possible directions, $A={up,down,right,left}$.
