@@ -1,3 +1,4 @@
+### CUSP-GX-5006: Urban Science Intensive II (Fall 2021) 
 # Developing Autonomous Drone Swarms with Multi-Agent Reinforcement Learning for Scalable Post-Disaster Damage Assessment
 <table align="center">
 <tr>
@@ -13,5 +14,30 @@
 </table>
 
 ## Abstract
-In recent years, drones have been used for supporting post-disaster damage assessment of buildings, roads, and infrastructure. Given that human resources are limited post-disaster, the development of autonomous drone swarms rather than a single drone is necessary for a further rapid and thorough assessment. Multi-Agent Reinforcement Learning is a promising approach because it can work without prior knowledge of a disaster area. In this research, we use Multi-Agent Q-learning to develop an autonomous navigation algorithm in a mapping task; drones should visit points of interest within a disaster area as fast and thoroughly as possible. We compare different state spaces by assessing coverage of the environment within the given limited time. We observe that using drones’ observations of the mapping status within their Field of View as a state is a better solution in terms of coverage and scalability. The performance of our algorithm can serve as a baseline for future work that would reduce redundant drones’ actions even further, incorporating deep learning approaches such as Graph Neural Network.
+In recent years, drones have been used for supporting post-disaster damage assessment of buildings, roads, and infrastructure. Given that human resources are limited post-disaster, the development of autonomous drone swarms rather than a single drone can enable a further rapid and thorough assessment. Multi-Agent Reinforcement Learning is a promising approach because it can adapt to dynamic environments and relax computational complexity for optimization. This research project applies Multi-Agent Q-learning to autonomous navigation for mapping and multi-objective drone swarm exploration of a disaster area in terms of tradeoffs between coverage and scalability. We compare two different state spaces by assessing coverage of the environment within the given limited time. We find that using drones’ observations of the mapping status within their Field of View as a state is better than using their positions in terms of coverage and scalability. Also, we empirically specify parametric thresholds for performance of a multi-objective RL algorithm as a point of reference for future work incorporating deep learning approaches, e.g., Graph Neural Networks (GNNs).
 
+## Team Members
+Daisuke Nakanishi, Gurpreet Singh, Kshitij Chandna 
+
+## Folder Structure
+~~~
+.
+├── experiment   # Jupyter notebooks to run the algorithms
+├── vis          # Jupyter notebooks to create animations
+├── single       # RL environment for single agent
+├── multi        # RL environment for multi agents
+├── QL           # Tabular Q-learning
+├── QL_NN        # (Preliminary) Function approximation Q-learning
+├── DQN          # (Preliminary) Deep Q-Networks
+├── GNN          # (Preliminary) Graph Neural Networks
+├── .gitignore
+└── README.md
+~~~
+
+## Dependencies
+- [OpenAI Gym](https://github.com/openai/gym)==0.21.0 or newer
+- Python==3.7.12 or newer
+- (Optional) [Stable Baselines3](https://stable-baselines.readthedocs.io/en/master/index.html#)==1.3.0 or newer
+
+## Project Webpage
+https://1312gurpreet.github.io/droneswarm/index.html
