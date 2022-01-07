@@ -51,9 +51,12 @@ Each time step, n drones take action sequentially; the preceding drone mapping r
 We examine two state spaces to deal with possible disaster areas and scenarios. Action space consists of four possible directions, A={up,down,right,left}.
 
 ## Results
-Our Webpage: https://1312gurpreet.github.io/droneswarm/index.html
+Our Webpage: https://dn2153.wixsite.com/drone
 
 ## Dependencies
 - [OpenAI Gym](https://github.com/openai/gym)==0.21.0 or newer
 - Python==3.7.12 or newer
 - (Optional) [Stable Baselines3](https://stable-baselines.readthedocs.io/en/master/index.html#)==1.3.0 or newer
+
+## Acknowledgment
+The authors would like to thank Dr. David K.A. Mordecai at RiskEcon® Lab @ Courant Institute of Mathematical Sciences NYU and Dr. Giuseppe Loianno at Agile Robotics and Perception Lab @ NYU Tandon School of Engineering for supervising the research.
